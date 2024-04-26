@@ -2,7 +2,7 @@ use std::io::{BufWriter, Write};
 
 use super::kmer::LongKmer;
 use crate::tempfile::TempFileManager;
-use simple_sds::raw_vector::*;
+use simple_sds_sbwt::raw_vector::*;
 use rayon::prelude::*;
 
 struct NullReader{}
@@ -22,7 +22,7 @@ pub fn get_sorted_dummies<const B: usize>(sorted_kmers_filepath: &std::path::Pat
     // Number of k-mers in file
     let n = std::fs::metadata(sorted_kmers_filepath).unwrap().len() as usize / LongKmer::<B>::byte_size();
 
-    let mut has_predecessor = simple_sds::raw_vector::RawVector::new();
+    let mut has_predecessor = simple_sds_sbwt::raw_vector::RawVector::new();
     has_predecessor.resize(n, false);
 
     let emptyfile = temp_file_manager.create_new_file("empty-", 10, ".bin");

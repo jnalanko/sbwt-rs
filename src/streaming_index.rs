@@ -2,10 +2,10 @@
 
 use crate::subsetseq::*;
 use crate::sbwt::*;
-use simple_sds::ops::Access;
-use simple_sds::ops::Push;
-use simple_sds::ops::Vector;
-use simple_sds::serialize::Serialize;
+use simple_sds_sbwt::ops::Access;
+use simple_sds_sbwt::ops::Push;
+use simple_sds_sbwt::ops::Vector;
+use simple_sds_sbwt::serialize::Serialize;
 
 /// Extending a search pattern to the right.
 pub trait ExtendRight {
@@ -44,7 +44,7 @@ impl<'a, SS: SubsetSeq> StreamingIndex<'a, SbwtIndex<SS>, LcsArray> {
 /// colexicographic order. 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct LcsArray {
-    lcs: simple_sds::int_vector::IntVector,
+    lcs: simple_sds_sbwt::int_vector::IntVector,
 }
 
 impl ContractLeft for LcsArray {
@@ -83,7 +83,7 @@ impl<SS: SubsetSeq> ExtendRight for SbwtIndex<SS>{
 impl LcsArray {
 
     /// Construct from a pre-built LCS array stored in an [IntVector](simple_sds::int_vector::IntVector).
-    pub fn new(v: simple_sds::int_vector::IntVector) -> Self {
+    pub fn new(v: simple_sds_sbwt::int_vector::IntVector) -> Self {
         Self{lcs: v}
     }
     
@@ -119,7 +119,7 @@ impl LcsArray {
 
     /// Load an LCS array that was previously serialized with [LcsArray::serialize].
     pub fn load<R: std::io::Read>(input: &mut R) -> std::io::Result<Self>{
-        let lcs = simple_sds::int_vector::IntVector::load(input)?;
+        let lcs = simple_sds_sbwt::int_vector::IntVector::load(input)?;
         Ok(Self{lcs})
     }
 
@@ -133,7 +133,7 @@ impl LcsArray {
         // ceil(log2(k)) = bits per element.
         let k = sbwt.k();
         let bit_width = 64 - u64::leading_zeros((k as isize -1) as u64);
-        let mut lcs = simple_sds::int_vector::IntVector::with_capacity(sbwt.n_sets(), bit_width as usize).unwrap();
+        let mut lcs = simple_sds_sbwt::int_vector::IntVector::with_capacity(sbwt.n_sets(), bit_width as usize).unwrap();
         let n_nodes = sbwt.n_sets();
         for _ in 0..n_nodes {
             lcs.push(0);

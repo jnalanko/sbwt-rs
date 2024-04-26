@@ -1,10 +1,10 @@
 //! A module for representing a sequence of subsets of an alphabet, with support for rank and select queries
 //! on the elements of the subsets.
 
-use simple_sds::bit_vector::*;
-use simple_sds::raw_vector::*;
-use simple_sds::ops::*;
-use simple_sds::serialize::*;
+use simple_sds_sbwt::bit_vector::*;
+use simple_sds_sbwt::raw_vector::*;
+use simple_sds_sbwt::ops::*;
+use simple_sds_sbwt::serialize::*;
 
 /// This trait represents a sequence of subsets from alphabet {0, 1, ..., sigma-1}, where sigma is the alphabet size.
 /// The trait provides access to the subsets and rank and select queries for the elements inside the subsets.
@@ -24,7 +24,7 @@ pub trait SubsetSeq{
     /// is 1 if and only if the i-th subset contains the j-th character. The resulting subset sequence has
     /// rank and select support if the provided bit vectors have rank and select support enabled. Otherwise, those
     /// supports need to be initialized by calling [`SubsetSeq::build_rank`] and [`SubsetSeq::build_select`], respectively.
-    fn new_from_bit_vectors(vecs: Vec<simple_sds::bit_vector::BitVector>) -> Self;
+    fn new_from_bit_vectors(vecs: Vec<simple_sds_sbwt::bit_vector::BitVector>) -> Self;
 
     /// Number of sets in the sequence (**not** the total length of the sets).
     fn len(&self) -> usize;
@@ -105,7 +105,7 @@ impl SubsetSeq for SubsetMatrix{
         Ok(Self{rows})
     }
 
-    fn new_from_bit_vectors(rows: Vec<simple_sds::bit_vector::BitVector>) -> Self{
+    fn new_from_bit_vectors(rows: Vec<simple_sds_sbwt::bit_vector::BitVector>) -> Self{
         Self{rows}
     }
 

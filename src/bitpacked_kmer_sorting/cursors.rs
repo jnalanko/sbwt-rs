@@ -1,6 +1,6 @@
 use std::{io::{BufReader, Seek, Read}, fs::File, path::Path};
 
-use simple_sds::{ops::Access, raw_vector::AccessRaw};
+use simple_sds_sbwt::{ops::Access, raw_vector::AccessRaw};
 use std::io::SeekFrom;
 use std::cmp::min;
 use super::kmer::LongKmer;
@@ -225,19 +225,19 @@ pub fn build_sbwt_bit_vectors<const B: usize>(
     n: usize,
     k: usize, 
     sigma: usize,
-    build_lcs: bool) -> (Vec<simple_sds::raw_vector::RawVector>, Option<simple_sds::int_vector::IntVector>)
+    build_lcs: bool) -> (Vec<simple_sds_sbwt::raw_vector::RawVector>, Option<simple_sds_sbwt::int_vector::IntVector>)
 {
 
-    let mut rawrows = Vec::<simple_sds::raw_vector::RawVector>::new();
+    let mut rawrows = Vec::<simple_sds_sbwt::raw_vector::RawVector>::new();
     for _ in 0..sigma {
-        rawrows.push(simple_sds::raw_vector::RawVector::with_len(n, false));
+        rawrows.push(simple_sds_sbwt::raw_vector::RawVector::with_len(n, false));
     }
 
     let mut lcs = if build_lcs { 
         // LCS values are between 0 and k-1
         assert!(k > 0);
         let bitwidth = 64 - (k as u64 - 1).leading_zeros();
-        Some(simple_sds::int_vector::IntVector::with_len(n, bitwidth as usize, 0).unwrap()) } 
+        Some(simple_sds_sbwt::int_vector::IntVector::with_len(n, bitwidth as usize, 0).unwrap()) } 
     else { 
         None 
     };
