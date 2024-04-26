@@ -82,7 +82,7 @@ impl<SS: SubsetSeq> ExtendRight for SbwtIndex<SS>{
 /// An LCS array implementation using ceil(log(k)) bits per element. 
 impl LcsArray {
 
-    /// Construct from a pre-built LCS array stored in an [IntVector](simple_sds::int_vector::IntVector).
+    /// Construct from a pre-built LCS array stored in an [IntVector](simple_sds_sbwt::int_vector::IntVector).
     pub fn new(v: simple_sds_sbwt::int_vector::IntVector) -> Self {
         Self{lcs: v}
     }

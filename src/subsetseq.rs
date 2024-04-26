@@ -20,7 +20,7 @@ pub trait SubsetSeq{
     /// initialized, so if the you need those functions, you need to call [`SubsetSeq::build_rank`] and [`SubsetSeq::build_select`], respectively.
     fn new(subset_seq: Vec<Vec<u8>>, sigma: usize) -> Self;
 
-    /// Create a new subset sequence from indicator [bit vectors](simple_sds::bit_vector::BitVector), where the i-th bit of the j-th bit vector
+    /// Create a new subset sequence from indicator [bit vectors](simple_sds_sbwt::bit_vector::BitVector), where the i-th bit of the j-th bit vector
     /// is 1 if and only if the i-th subset contains the j-th character. The resulting subset sequence has
     /// rank and select support if the provided bit vectors have rank and select support enabled. Otherwise, those
     /// supports need to be initialized by calling [`SubsetSeq::build_rank`] and [`SubsetSeq::build_select`], respectively.
