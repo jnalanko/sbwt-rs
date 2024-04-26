@@ -1,0 +1,34 @@
+[package]
+name = "simple-sds"
+version = "0.3.1"
+authors = ["Jouni Siren <jouni.siren@iki.fi>"]
+edition = "2018"
+description = "Basic succinct data structures."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/jltsiren/simple-sds"
+
+[features]
+binaries = ["getopts", "rand"]
+
+[dependencies]
+getopts = { version = "0.2", optional = true }
+libc = "0.2"
+rand = { version = "0.8", optional = true }
+
+[dev-dependencies]
+rand = "0.8"
+
+[[bin]]
+name = "bv-benchmark"
+required-features = ["binaries"]
+test = false
+bench = false
+doc = false
+
+[[bin]]
+name = "wm-benchmark"
+required-features = ["binaries"]
+test = false
+bench = false
+doc = false
