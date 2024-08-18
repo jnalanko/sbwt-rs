@@ -149,6 +149,54 @@ pub use util::reverse_complement_in_place;
 pub use util::VecSeqStream;
 pub use util::SliceSeqStream;
 
+/// File format id. Changes at non-backwards-compatible changes.
+pub const FILE_FORMAT_VERSION_STRING: &str = "sbwtfile-v2";
+
+fn read_string<R: std::io::Read>(input: &mut R) -> Result<String, Box<dyn std::error::Error>> {
+    let mut len_buf = [0_u8; 8]; 
+    input.read_exact(&mut len_buf)?;
+
+    let len = usize::from_le_bytes(len_buf);
+    let mut string_buf = vec![0u8; len];
+    input.read_exact(&mut string_buf)?;
+
+    let s = String::from_utf8(string_buf)?;
+    Ok(s)
+}
+
+fn read_u64<R: std::io::Read>(input: &mut R) -> Result<u64, Box<dyn std::error::Error>> {
+    let mut buf = [0_u8; 8];
+    input.read_exact(&mut buf)?;
+    Ok(u64::from_le_bytes(buf))
+}
+
+pub struct SbwtFileHeader {
+    file_format_string: String,
+    ids_of_stored_entries: Vec<String>,
+}
+
+impl SbwtFileHeader {
+    fn load(input: &mut impl std::io::Read) -> Result<SbwtFileHeader, Box<dyn std::error::Error>> {
+        let file_format_string = read_string(input)?;
+        if file_format_string != FILE_FORMAT_VERSION_STRING {
+            if file_format_string.len() <= 100 {
+                return Err(format!("Incompatible file format: expected {}, found {}", FILE_FORMAT_VERSION_STRING, file_format_string).into());
+            } else {
+                return Err(format!("Error loading file, file format string {} not found", FILE_FORMAT_VERSION_STRING).into());
+            }
+        }
+
+        let n_entries = read_u64(input)? as usize;
+
+        let mut ids_of_stored_entries: Vec<String> = vec![];
+        for _ in 0..n_entries {
+            ids_of_stored_entries.push(read_string(input)?);
+        }
+
+        Ok(SbwtFileHeader{file_format_string, ids_of_stored_entries})
+    }
+}
+
 /// A stream of ASCII-encoded DNA-sequences. This is not necessarily a standard Rust iterator
 /// because we want to support streaming sequences from disk, which is not possible
 /// with a regular iterator due to lifetime constraints of the Iterator trait.

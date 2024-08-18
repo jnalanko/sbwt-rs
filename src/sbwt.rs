@@ -190,7 +190,6 @@ impl<SS: SubsetSeq> SbwtIndex<SS> {
         };
 
         Ok(index)
-
     }
 
     /// Returns the edge label on the incoming edge to the i-th node in colexicographic order 
@@ -405,7 +404,7 @@ impl<SS: SubsetSeq> SbwtIndex<SS> {
 
     /// Internal function: construct from parts.
     #[allow(non_snake_case)]
-    pub(crate) fn from_components(subset_rank:SS, n_kmers: usize, k: usize, C: Vec<usize>, prefix_lookup_table: PrefixLookupTable) -> Self {
+    pub(crate) fn from_components(subset_rank: SS, n_kmers: usize, k: usize, C: Vec<usize>, prefix_lookup_table: PrefixLookupTable) -> Self {
         Self {sbwt: subset_rank, n_kmers, k, C, prefix_lookup_table}
     }
 
