@@ -170,12 +170,39 @@ fn read_u64<R: std::io::Read>(input: &mut R) -> Result<u64, Box<dyn std::error::
     Ok(u64::from_le_bytes(buf))
 }
 
+fn write_string<W: std::io::Write>(out: &mut W, s: &[u8]) -> std::io::Result<usize>{
+    write_bytes(out, &s.len().to_le_bytes())?;
+    write_bytes(out, s)?;
+    
+    Ok(s.len().to_le_bytes().len() + s.len())
+}
+
+pub(crate) fn write_bytes<W: std::io::Write>(out: &mut W, bytes: &[u8]) -> std::io::Result<usize>{
+    out.write_all(bytes)?;
+    Ok(bytes.len() + 8)
+}
+
 pub struct SbwtFileHeader {
     file_format_string: String,
     ids_of_stored_entries: Vec<String>,
 }
 
 impl SbwtFileHeader {
+
+    fn new(ids_of_stored_entries: Vec<String>) -> SbwtFileHeader {
+        SbwtFileHeader{file_format_string: FILE_FORMAT_VERSION_STRING.to_string(), ids_of_stored_entries}
+    }
+
+    fn write(&self, output: &mut impl std::io::Write) -> std::io::Result<usize> {
+        let mut bytes_written = 0_usize;
+        bytes_written += write_string(output, FILE_FORMAT_VERSION_STRING.as_bytes())?;
+        bytes_written += write_bytes(output, &self.ids_of_stored_entries.len().to_le_bytes())?;
+        for id in self.ids_of_stored_entries.iter() {
+            bytes_written += write_string(output, id.as_bytes())?;
+        }
+        Ok(bytes_written)
+    }
+
     fn load(input: &mut impl std::io::Read) -> Result<SbwtFileHeader, Box<dyn std::error::Error>> {
         let file_format_string = read_string(input)?;
         if file_format_string != FILE_FORMAT_VERSION_STRING {
