@@ -74,12 +74,12 @@ use crate::util::DNA_ALPHABET;
 #[embed_doc_image::embed_doc_image("sbwt_sequence", "doc_images/sbwt_figure.drawio.svg")] 
 #[embed_doc_image::embed_doc_image("sbwt_search", "doc_images/sbwt_figure_with_search.drawio.png")] // This is as .png because there is a bug in vertical centering in the svg export of drawio.
 
-enum SbwtIndexVariant {
+pub enum SbwtIndexVariant {
     SubsetMatrix(SbwtIndex<SubsetMatrix>),
     //SubsetConcat(SbwtIndex<SubsetConcat>),
 }
 
-fn write_sbwt_index_variant(sbwt: &SbwtIndexVariant, out: &mut impl std::io::Write) -> std::io::Result<usize> {
+pub fn write_sbwt_index_variant(sbwt: &SbwtIndexVariant, out: &mut impl std::io::Write) -> std::io::Result<usize> {
     match sbwt {
         SbwtIndexVariant::SubsetMatrix(sbwt) => {
             out.write(&(b"SubsetMatrix".len() as u64).to_le_bytes())?;
@@ -89,7 +89,7 @@ fn write_sbwt_index_variant(sbwt: &SbwtIndexVariant, out: &mut impl std::io::Wri
     }
 }
 
-fn load_sbwt_index_variant(input: &mut impl std::io::Read) -> Result<SbwtIndexVariant, Box<dyn std::error::Error>> {
+pub fn load_sbwt_index_variant(input: &mut impl std::io::Read) -> Result<SbwtIndexVariant, Box<dyn std::error::Error>> {
     let type_id_len = input.read_u64::<LittleEndian>().unwrap();
     let mut type_id = vec![0_u8; type_id_len as usize];
     input.read_exact(&mut type_id)?;
