@@ -112,6 +112,8 @@ pub struct SbwtIndex<SS: SubsetSeq> {
     prefix_lookup_table: PrefixLookupTable,
 }
 
+// When non-compatible changes to the serialization format occur, update the version number here to the current version 
+const SERIALIZATION_MAGIC_STRING: &[u8] = b"sbwtfile-v0.3.0"; 
 
 impl<SS: SubsetSeq> SbwtIndex<SS> {
 
@@ -164,6 +166,10 @@ impl<SS: SubsetSeq> SbwtIndex<SS> {
     pub fn serialize<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<usize> {
         let mut n_written = 0_usize;
 
+        let magic_string_length = [SERIALIZATION_MAGIC_STRING.len() as u8];
+        n_written += util::write_bytes(out, &magic_string_length)?;
+        n_written += util::write_bytes(out, &SERIALIZATION_MAGIC_STRING)?;
+
         n_written += self.sbwt.serialize(out)?;
 
         // We're not using serde because we want full control over the bytes
@@ -189,6 +195,13 @@ impl<SS: SubsetSeq> SbwtIndex<SS> {
     /// Loads an index that was previously serialized with [SbwtIndex::serialize].
     #[allow(non_snake_case)] // For C-array
     pub fn load<R: std::io::Read>(input: &mut R) -> std::io::Result<Self> {
+
+        let magic_string_length = input.read_u8().unwrap();
+        let mut magic_string_buf = vec![0u8; magic_string_length as usize];
+        input.read_exact(&mut magic_string_buf).unwrap();
+        if magic_string_buf != SERIALIZATION_MAGIC_STRING {
+            panic!("Error loading SBWT: incorrect version string: expected {}, found {}", String::from_utf8(SERIALIZATION_MAGIC_STRING.to_vec()).unwrap(), String::from_utf8_lossy(SERIALIZATION_MAGIC_STRING));
+        }
 
         let subset_rank = SS::load(input)?;
 
