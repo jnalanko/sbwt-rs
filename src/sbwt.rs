@@ -102,30 +102,6 @@ pub fn load_sbwt_index_variant(input: &mut impl std::io::Read) -> Result<SbwtInd
 
 }
 
-pub trait SbwtIndexInterface {
-    fn n_kmers(&self) -> usize;
-    fn n_sets(&self) -> usize;
-    fn k(&self) -> usize;
-    fn char_idx(&self, c: u8) -> usize;
-    fn alphabet(&self) -> &[u8];
-    fn interval_of_empty_string(&self) -> std::ops::Range<usize>;
-    fn C(&self) -> &[usize];
-    fn serialize<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<usize>;
-    fn load<R: std::io::Read>(input: &mut R) -> std::io::Result<Self> where Self: Sized;
-    fn inlabel(&self, i: usize) -> Option<u8>;
-    fn build_select(&mut self);
-    fn lf_step(&self, i: usize, char_idx: usize) -> usize;
-    fn inverse_lf_step(&self, i: usize) -> Option<usize>;
-    fn push_kmer_to_vec(&self, colex_rank: usize, buf: &mut Vec<u8>);
-    fn access_kmer(&self, colex_rank: usize) -> Vec<u8>;
-    fn search(&self, pattern: &[u8]) -> Option<std::ops::Range<usize>>;
-    fn search_from(&self, interval: std::ops::Range<usize>, pattern: &[u8]) -> Option<std::ops::Range<usize>>;
-    fn reconstruct_padded_spectrum(&self) -> Vec<u8>;
-    fn set_lookup_table(&mut self, prefix_lookup_table: PrefixLookupTable);
-    fn get_lookup_table(&self) -> &PrefixLookupTable;
-}
-
-
 #[derive(Clone, Eq, PartialEq, Debug)]
 #[allow(non_snake_case)] // C-array is an established convention in BWT indexes
 pub struct SbwtIndex<SS: SubsetSeq> {
@@ -137,26 +113,26 @@ pub struct SbwtIndex<SS: SubsetSeq> {
 }
 
 
-impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
+impl<SS: SubsetSeq> SbwtIndex<SS> {
 
     /// Number of k-mers in the index, not counting dummy k-mers.
-    fn n_kmers(&self) -> usize {
+    pub fn n_kmers(&self) -> usize {
         self.n_kmers
     }
 
     /// Number of sets in the SBWT.
-    fn n_sets(&self) -> usize {
+    pub fn n_sets(&self) -> usize {
         self.sbwt.len()
     }
 
     /// Length of the k-mers in the index.
-    fn k(&self) -> usize {
+    pub fn k(&self) -> usize {
         self.k
     }
 
     /// Maps A,C,G,T to 0,1,2,3.
     /// Panics if c is not a DNA character.
-    fn char_idx(&self, c: u8) -> usize {
+    pub fn char_idx(&self, c: u8) -> usize {
         let idx = ACGT_TO_0123[c as usize] as usize;
         if idx > DNA_ALPHABET.len() {
             panic!("Invalid character: {}", char::from(c));
@@ -166,11 +142,11 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
 
     /// Returns the alphabet ACGT of the index in ascii.
     #[allow(unused)]
-    fn alphabet(&self) -> &[u8] {
+    pub fn alphabet(&self) -> &[u8] {
         &DNA_ALPHABET
     }
 
-    fn interval_of_empty_string(&self) -> std::ops::Range<usize> {
+    pub fn interval_of_empty_string(&self) -> std::ops::Range<usize> {
         0..self.n_sets()
     }
 
@@ -185,7 +161,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
 
     /// Writes the index to the writer and retuns the number of bytes written.
     /// The array can later be loaded with [SbwtIndex::load].
-    fn serialize<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<usize> {
+    pub fn serialize<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<usize> {
         let mut n_written = 0_usize;
 
         n_written += self.sbwt.serialize(out)?;
@@ -212,7 +188,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
 
     /// Loads an index that was previously serialized with [SbwtIndex::serialize].
     #[allow(non_snake_case)] // For C-array
-    fn load<R: std::io::Read>(input: &mut R) -> std::io::Result<Self> {
+    pub fn load<R: std::io::Read>(input: &mut R) -> std::io::Result<Self> {
 
         let subset_rank = SS::load(input)?;
 
@@ -249,7 +225,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
     /// Returns the edge label on the incoming edge to the i-th node in colexicographic order 
     /// in the SBWT graph (not the same graph as the de Bruijn graph!), or None if the node has 
     /// no incoming edge. This is well-defined since every node in the SBWT graph has at most 1 incoming edge.
-    fn inlabel(&self, i: usize) -> Option<u8> {
+    pub fn inlabel(&self, i: usize) -> Option<u8> {
         if i == 0 {
             return None; // Source node
         }
@@ -274,19 +250,19 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
 
     /// Build select support for the SBWT subset sequence. This is required for
     /// [SbwtIndex::inverse_lf_step] and [SbwtIndex::access_kmer].
-    fn build_select(&mut self) {
+    pub fn build_select(&mut self) {
         self.sbwt.build_select();
     }
 
     /// A low-level function returning `C[char_idx] + SBWT.rank(char_idx, i)`.
-    fn lf_step(&self, i: usize, char_idx: usize) -> usize {
+    pub fn lf_step(&self, i: usize, char_idx: usize) -> usize {
         self.C[char_idx] + self.sbwt.rank(char_idx as u8, i)
     }
 
     /// The inverse function of [`SbwtIndex::lf_step`].
     /// Requires that the [select support](SbwtIndex::build_select) has been built.
     /// Returns None if called on the source node of the SBWT graph.
-    fn inverse_lf_step(&self, i: usize) -> Option<usize> {
+    pub fn inverse_lf_step(&self, i: usize) -> Option<usize> {
         match self.inlabel(i){
             None => None, // Source node
             Some(c) => {
@@ -301,7 +277,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
     /// Accesses the k-mer associated with the node with colexicographic rank
     /// `colex_rank`. Note that this k-mer may contain dollar symbols if it's
     /// a dummy node. The k-mer string is pushed to `buf`.
-    fn push_kmer_to_vec(&self, mut colex_rank: usize, buf: &mut Vec<u8>){
+    pub fn push_kmer_to_vec(&self, mut colex_rank: usize, buf: &mut Vec<u8>){
         let buf_start = buf.len();
         for _ in 0..self.k {
             match self.inlabel(colex_rank) {
@@ -322,7 +298,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
     /// `colex_rank`. Note that this k-mer may contain dollar symbols if it's
     /// a dummy node. The k-mer is retuned as a `Vec<u8>`. To push to an existing
     /// buffer for better performance, see [SbwtIndex::push_kmer_to_vec].
-    fn access_kmer(&self, colex_rank: usize) -> Vec<u8> {
+    pub fn access_kmer(&self, colex_rank: usize) -> Vec<u8> {
         let mut buf = Vec::with_capacity(self.k);
         self.push_kmer_to_vec(colex_rank, &mut buf);
         buf
@@ -330,7 +306,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
 
     /// Returns the colexicographic interval of the pattern, if found.
     /// The pattern is given in ascii characters.
-    fn search(&self, pattern: &[u8]) -> Option<std::ops::Range<usize>> {
+    pub fn search(&self, pattern: &[u8]) -> Option<std::ops::Range<usize>> {
         let l = self.prefix_lookup_table.prefix_length;
         match pattern.len() >= l {
             true => {
@@ -348,7 +324,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
     /// Searches the pattern starting from the given colexicographic interval.
     /// Returns the colexicographic interval after searching the pattern, if found.
     /// The pattern is given in ascii characters.
-    fn search_from(&self, interval: std::ops::Range<usize>, pattern: &[u8]) -> Option<std::ops::Range<usize>> {
+    pub fn search_from(&self, interval: std::ops::Range<usize>, pattern: &[u8]) -> Option<std::ops::Range<usize>> {
         let mut left = interval.start;
         let mut right = interval.end; 
         for chr in pattern.iter() {
@@ -368,7 +344,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
     /// Reconstruct all k-mers in the [padded k-spectrum](#sbwt-graph) in the data structure.
     /// The reconstructed k-mers concatenated into a single ascii string in colexicographic order.
     /// The i-th k-mer starts at position i*k in the string.
-    fn reconstruct_padded_spectrum(&self) -> Vec<u8> {
+    pub fn reconstruct_padded_spectrum(&self) -> Vec<u8> {
         let n_nodes = self.n_sets();
         let k = self.k;
 
@@ -395,18 +371,14 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
     }
 
     /// Set the prefix lookup table of the data structure.
-    fn set_lookup_table(&mut self, prefix_lookup_table: PrefixLookupTable){
+    pub fn set_lookup_table(&mut self, prefix_lookup_table: PrefixLookupTable){
         self.prefix_lookup_table = prefix_lookup_table;
     }
 
     /// Get the prefix lookup table of the data structure.
-    fn get_lookup_table(&self) -> &PrefixLookupTable {
+    pub fn get_lookup_table(&self) -> &PrefixLookupTable {
         &self.prefix_lookup_table
     }
-
-}
-
-impl<SS: SubsetSeq> SbwtIndex<SS> {
 
     /// Get the SBWT set sequence of the data structure.
     pub fn sbwt(&self) -> &SS {

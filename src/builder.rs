@@ -5,7 +5,6 @@ use std::str::FromStr;
 use crate::{subsetseq::SubsetMatrix, SeqStream};
 use crate::sbwt::{PrefixLookupTable, SbwtIndex};
 use crate::streaming_index::LcsArray;
-use crate::sbwt::SbwtIndexInterface;
 
 // 'a must be a higher-ranked lifetime because it's tied to the lifetime
 // of the borrow in stream_next? That function should be callabed with

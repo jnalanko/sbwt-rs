@@ -4,10 +4,9 @@ use rand::{rngs::StdRng, Rng};
 use rand::SeedableRng;
 
 use crate::streaming_index::StreamingIndex;
-use crate::{sbwt::SbwtIndex, streaming_index::LcsArray, subsetseq::SubsetMatrix};
-use crate::sbwt::SbwtIndexInterface;
+use crate::{sbwt::SbwtIndex, streaming_index::LcsArray, subsetseq::SubsetSeq};
 
-fn sample_kmers<SBWT: SbwtIndexInterface>(sbwt: &SBWT, n_queries: usize) -> Vec<Vec<u8>> {
+fn sample_kmers<SS: SubsetSeq>(sbwt: &SbwtIndex<SS>, n_queries: usize) -> Vec<Vec<u8>> {
     let mut rng = StdRng::from_entropy();
     let mut queries = Vec::<Vec::<u8>>::new();
     for _ in 0..n_queries {
@@ -44,7 +43,7 @@ fn generate_random_kmers(n_queries: usize, k: usize, rng: &mut StdRng) -> Vec<Ve
 }
 
 
-fn benchmark_single_positive_query<SBWT: SbwtIndexInterface>(sbwt: &SBWT) {
+fn benchmark_single_positive_query<SS: SubsetSeq>(sbwt: &SbwtIndex<SS>) {
 
     let n_queries = 1_000_000;
 
@@ -63,7 +62,7 @@ fn benchmark_single_positive_query<SBWT: SbwtIndexInterface>(sbwt: &SBWT) {
     println!("{:.2} nanoseconds / k-mer", (end_time - start_time).as_nanos() as f64 / queries.len() as f64);
 }
 
-fn benchmark_streaming_random_query<SBWT: SbwtIndexInterface>(sbwt: &SBWT, lcs: &LcsArray) {
+fn benchmark_streaming_random_query<SS: SubsetSeq>(sbwt: &SbwtIndex<SS>, lcs: &LcsArray) {
     let n_queries = 100;
     let query_len = 10_000;
 
@@ -89,7 +88,7 @@ fn benchmark_streaming_random_query<SBWT: SbwtIndexInterface>(sbwt: &SBWT, lcs: 
     println!("{:.2} nanoseconds / k-mer", (end_time - start_time).as_nanos() as f64 / n_kmers_queried as f64);
 }
 
-fn benchmark_single_random_query<SBWT: SbwtIndexInterface>(sbwt: &SBWT) {
+fn benchmark_single_random_query<SS: SubsetSeq>(sbwt: &SbwtIndex<SS>) {
     
     let n_queries = 1_000_000;
     let mut rng = StdRng::from_entropy();
@@ -111,7 +110,7 @@ fn benchmark_single_random_query<SBWT: SbwtIndexInterface>(sbwt: &SBWT) {
 }
 
 // Assumes sbwt has select support
-fn benchmark_access<SBWT: SbwtIndexInterface>(sbwt: &SBWT){
+fn benchmark_access<SS: SubsetSeq>(sbwt: &SbwtIndex<SS>){
     let n_queries = 1_000_000;
     let mut rng = StdRng::from_entropy();
     let queries = (0..n_queries).map(|_| rng.gen_range(0, sbwt.n_kmers())).collect::<Vec<usize>>();
@@ -134,7 +133,7 @@ fn benchmark_access<SBWT: SbwtIndexInterface>(sbwt: &SBWT){
 
 /// Bechmark various queries on the sbwt. If the LCS array is given, also benchmarks
 /// streaming search.
-pub fn benchmark_all<SBWT: SbwtIndexInterface>(mut sbwt: SBWT, lcs: Option<LcsArray>) {
+pub fn benchmark_all<SS: SubsetSeq>(mut sbwt: SbwtIndex<SS>, lcs: Option<LcsArray>) {
 
     log::info!("Preparing for benchmarks");
     sbwt.build_select();
