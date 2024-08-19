@@ -67,7 +67,8 @@ impl ContractLeft for LcsArray {
     }
 }
 
-impl<SS: SubsetSeq> ExtendRight for SbwtIndex<SS>{
+// Any SbwtIndexInterface can be used for right extensions.
+impl<T: SbwtIndexInterface> ExtendRight for T {
 
     /// Right extensions implemented time O(t), where t is the time for a rank query in the
     /// subset rank query implementation of `SS`. This is O(1) for [SubsetMatrix]. 
