@@ -5,6 +5,7 @@ use rand::SeedableRng;
 
 use crate::streaming_index::StreamingIndex;
 use crate::{sbwt::SbwtIndex, streaming_index::LcsArray, subsetseq::SubsetMatrix};
+use crate::sbwt::SbwtIndexInterface;
 
 fn sample_kmers(sbwt: &SbwtIndex<SubsetMatrix>, n_queries: usize) -> Vec<Vec<u8>> {
     let mut rng = StdRng::from_entropy();

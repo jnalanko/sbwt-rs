@@ -2,6 +2,7 @@
 
 use crate::sbwt::SbwtIndex;
 use crate::subsetseq::SubsetSeq;
+use crate::sbwt::SbwtIndexInterface;
 use std::{io::Write, sync::{Arc, Mutex}};
 use rayon::prelude::*;
 use bitvec::bitvec;
