@@ -31,11 +31,11 @@ pub struct StreamingIndex<'a, E: ExtendRight, C: ContractLeft> {
     k: usize, // Maximum length of a match
 }
 
-impl<'a, SS: SubsetSeq> StreamingIndex<'a, SbwtIndex<SS>, LcsArray> {
+impl<'a, SBWT: SbwtIndexInterface> StreamingIndex<'a, SBWT, LcsArray> {
 
     /// Create a new streaming index using an SBWT index for right extensions
     /// and an LCS array for left contractions.
-    pub fn new(sbwt: &'a SbwtIndex<SS>, lcs: &'a LcsArray) -> Self {
+    pub fn new(sbwt: &'a SBWT, lcs: &'a LcsArray) -> Self {
         StreamingIndex{contract_left: lcs, extend_right: sbwt, n: sbwt.n_sets(), k: sbwt.k()}
     }
 }
