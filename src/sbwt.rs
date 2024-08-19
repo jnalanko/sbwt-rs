@@ -380,7 +380,7 @@ impl<SS: SubsetSeq> SbwtIndexInterface for SbwtIndex<SS> {
         let mut kmers_concat = vec![0u8; n_nodes * k];
         for round in 0..k {
             if round > 0 {
-                log::info!("Building column {} of the SBWT matrix", k-2-round);
+                log::info!("Building column {} of the SBWT matrix", k-1-round);
                 last = self.push_labels_forward(&last);
             }
 
