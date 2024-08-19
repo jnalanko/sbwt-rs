@@ -200,7 +200,7 @@ impl<SS: SubsetSeq> SbwtIndex<SS> {
         let mut magic_string_buf = vec![0u8; magic_string_length as usize];
         input.read_exact(&mut magic_string_buf).unwrap();
         if magic_string_buf != SERIALIZATION_MAGIC_STRING {
-            panic!("Error loading SBWT: incorrect version string: expected {}, found {}", String::from_utf8(SERIALIZATION_MAGIC_STRING.to_vec()).unwrap(), String::from_utf8_lossy(&magic_string_buf));
+            panic!("Error loading SBWT: incorrect version string: expected \"{}\", found \"{}\"", String::from_utf8(SERIALIZATION_MAGIC_STRING.to_vec()).unwrap(), String::from_utf8_lossy(&magic_string_buf));
         }
 
         let subset_rank = SS::load(input)?;
